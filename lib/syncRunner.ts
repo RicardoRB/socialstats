@@ -1,10 +1,5 @@
 import { createServer } from './auth';
-import { youtube } from './providers/youtube';
-import { Provider } from './providers';
-
-const providers: Record<string, Provider> = {
-  youtube,
-};
+import { Provider, providers } from './providers';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from 'crypto';
+import { createHmac, randomBytes, createHash } from 'crypto';
 
 export interface TokenResponse {
   access_token: string;
@@ -15,6 +15,7 @@ export interface ProviderConfig {
   authEndpoint: string;
   tokenEndpoint: string;
   scope: string;
+  pkce?: boolean;
 }
 
 function getProviders(): Record<string, ProviderConfig> {
@@ -25,6 +26,14 @@ function getProviders(): Record<string, ProviderConfig> {
       authEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
       tokenEndpoint: 'https://oauth2.googleapis.com/token',
       scope: 'https://www.googleapis.com/auth/youtube.readonly',
+    },
+    x: {
+      clientId: process.env.X_CLIENT_ID || '',
+      clientSecret: process.env.X_CLIENT_SECRET || '',
+      authEndpoint: 'https://twitter.com/i/oauth2/authorize',
+      tokenEndpoint: 'https://api.twitter.com/2/oauth2/token',
+      scope: 'tweet.read users.read offline.access',
+      pkce: true,
     },
   };
 }
@@ -39,7 +48,16 @@ export function buildAuthUrl(provider: string, userId: string, redirectTo?: stri
 
   const timestamp = Date.now();
   const nonce = randomBytes(8).toString('hex');
-  const payload = JSON.stringify({ userId, timestamp, nonce, redirectTo });
+
+  let codeVerifier: string | undefined;
+  let codeChallenge: string | undefined;
+
+  if (config.pkce) {
+    codeVerifier = randomBytes(32).toString('hex');
+    codeChallenge = createHash('sha256').update(codeVerifier).digest('base64url');
+  }
+
+  const payload = JSON.stringify({ userId, timestamp, nonce, redirectTo, codeVerifier });
   const signature = createHmac('sha256', getSecret()).update(payload).digest('hex');
   const state = Buffer.from(`${payload}.${signature}`).toString('base64');
 
@@ -49,13 +67,21 @@ export function buildAuthUrl(provider: string, userId: string, redirectTo?: stri
   url.searchParams.set('response_type', 'code');
   url.searchParams.set('scope', config.scope);
   url.searchParams.set('state', state);
-  url.searchParams.set('access_type', 'offline');
-  url.searchParams.set('prompt', 'consent');
+
+  if (provider === 'youtube') {
+    url.searchParams.set('access_type', 'offline');
+    url.searchParams.set('prompt', 'consent');
+  }
+
+  if (codeChallenge) {
+    url.searchParams.set('code_challenge', codeChallenge);
+    url.searchParams.set('code_challenge_method', 'S256');
+  }
 
   return { url: url.toString(), state };
 }
 
-export function verifyState(state: string, userId: string): { isValid: boolean; redirectTo?: string } {
+export function verifyState(state: string, userId: string): { isValid: boolean; redirectTo?: string; codeVerifier?: string } {
   try {
     const decoded = Buffer.from(state, 'base64').toString('utf-8');
     const lastDotIndex = decoded.lastIndexOf('.');
@@ -76,26 +102,32 @@ export function verifyState(state: string, userId: string): { isValid: boolean; 
     const now = Date.now();
     if (now - payload.timestamp > 10 * 60 * 1000) return { isValid: false };
 
-    return { isValid: true, redirectTo: payload.redirectTo };
+    return { isValid: true, redirectTo: payload.redirectTo, codeVerifier: payload.codeVerifier };
   } catch (e) {
     return { isValid: false };
   }
 }
 
-export async function exchangeCode(provider: string, code: string): Promise<TokenResponse> {
+export async function exchangeCode(provider: string, code: string, codeVerifier?: string): Promise<TokenResponse> {
   const config = getProviders()[provider];
   if (!config) throw new Error(`Unsupported provider: ${provider}`);
+
+  const params: Record<string, string> = {
+    code,
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    redirect_uri: getRedirectUri(provider),
+    grant_type: 'authorization_code',
+  };
+
+  if (codeVerifier) {
+    params.code_verifier = codeVerifier;
+  }
 
   const response = await fetch(config.tokenEndpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      code,
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-      redirect_uri: getRedirectUri(provider),
-      grant_type: 'authorization_code',
-    }),
+    body: new URLSearchParams(params),
   });
 
   if (!response.ok) {

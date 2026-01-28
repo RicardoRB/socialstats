@@ -21,6 +21,19 @@ test('OAuth Utilities', async (t) => {
     assert.ok(state);
   });
 
+  await t.test('buildAuthUrl should support PKCE for X provider', () => {
+    process.env.X_CLIENT_ID = 'x-client-id';
+    const { url, state } = buildAuthUrl('x', userId, redirectTo);
+
+    assert.ok(url.includes('https://twitter.com/i/oauth2/authorize'));
+    assert.ok(url.includes('code_challenge='));
+    assert.ok(url.includes('code_challenge_method=S256'));
+
+    const { codeVerifier } = verifyState(state, userId);
+    assert.ok(codeVerifier);
+    assert.strictEqual(codeVerifier.length, 64); // 32 bytes in hex
+  });
+
   await t.test('verifyState should validate a correct state', () => {
     const { state } = buildAuthUrl(provider, userId, redirectTo);
     const { isValid, redirectTo: recoveredRedirectTo } = verifyState(state, userId);
@@ -73,6 +86,26 @@ test('OAuth Utilities', async (t) => {
       const tokens = await exchangeCode('youtube', 'some-code');
       assert.strictEqual(tokens.access_token, 'abc');
       assert.strictEqual(tokens.provider_user_id, 'user-id-from-google');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  await t.test('exchangeCode should include code_verifier for PKCE', async () => {
+    let capturedBody: URLSearchParams | null = null;
+    const originalFetch = global.fetch;
+    global.fetch = (async (_url: string, options: any) => {
+      capturedBody = new URLSearchParams(options.body);
+      return {
+        ok: true,
+        json: async () => ({ access_token: 'x-token', token_type: 'Bearer' }),
+      };
+    }) as any;
+
+    try {
+      await exchangeCode('x', 'x-code', 'x-verifier');
+      assert.strictEqual(capturedBody?.get('code_verifier'), 'x-verifier');
+      assert.strictEqual(capturedBody?.get('code'), 'x-code');
     } finally {
       global.fetch = originalFetch;
     }

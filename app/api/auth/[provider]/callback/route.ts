@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCode, verifyState } from '@/lib/oauth';
 import { createClient } from '@/lib/supabase-server';
+import { getProvider } from '@/lib/providers';
 
 export async function GET(
   request: NextRequest,
@@ -24,33 +25,38 @@ export async function GET(
   }
 
   // 1. Verify state
-  const { isValid, redirectTo } = verifyState(state, user.id);
+  const { isValid, redirectTo, codeVerifier } = verifyState(state, user.id);
   if (!isValid) {
     return NextResponse.json({ error: 'Invalid state' }, { status: 400 });
   }
 
   try {
-    // 2. Exchange code for tokens
-    const tokens = await exchangeCode(provider, code);
+    const providerInstance = getProvider(provider);
+    if (providerInstance?.exchangeCodeAndSave) {
+      await providerInstance.exchangeCodeAndSave(user.id, code, state);
+    } else {
+      // 2. Exchange code for tokens
+      const tokens = await exchangeCode(provider, code, codeVerifier);
 
-    // 3. Persist tokens in social_accounts
-    const { error: dbError } = await supabase
-      .from('social_accounts')
-      .upsert({
-        user_id: user.id,
-        provider,
-        provider_user_id: tokens.provider_user_id || 'unknown',
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'user_id,provider'
-      });
+      // 3. Persist tokens in social_accounts
+      const { error: dbError } = await supabase
+        .from('social_accounts')
+        .upsert({
+          user_id: user.id,
+          provider,
+          provider_user_id: tokens.provider_user_id || 'unknown',
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          token_expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,provider,provider_user_id'
+        });
 
-    if (dbError) {
-      console.error('Database error saving tokens:', dbError);
-      return NextResponse.json({ error: 'Database error: ' + dbError.message }, { status: 500 });
+      if (dbError) {
+        console.error('Database error saving tokens:', dbError);
+        return NextResponse.json({ error: 'Database error: ' + dbError.message }, { status: 500 });
+      }
     }
 
     const finalRedirect = redirectTo || '/dashboard';

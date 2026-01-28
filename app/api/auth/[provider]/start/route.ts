@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { buildAuthUrl } from '@/lib/oauth';
 import { createClient } from '@/lib/supabase-server';
+import { getProvider } from '@/lib/providers';
 
 export async function GET(
   request: NextRequest,
@@ -22,6 +23,11 @@ export async function GET(
   }
 
   try {
+    const providerInstance = getProvider(provider);
+    if (providerInstance?.getAuthUrl) {
+      return NextResponse.redirect(providerInstance.getAuthUrl(user.id, redirectTo));
+    }
+
     const { url } = buildAuthUrl(provider, user.id, redirectTo);
     return NextResponse.redirect(url);
   } catch (error: any) {
