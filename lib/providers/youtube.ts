@@ -1,5 +1,5 @@
 import { MetricValue, Provider } from './index';
-import { buildAuthUrl, exchangeCode, verifyState } from '../oauth';
+import { buildAuthUrl, exchangeCode, verifyState, getProviders } from '../oauth';
 
 export const getAuthUrl = (userId: string, redirectTo?: string) => {
   return buildAuthUrl('youtube', userId, redirectTo);
@@ -47,12 +47,13 @@ export const youtube: Provider = {
       return account.access_token;
     }
 
-    const response = await fetch('https://oauth2.googleapis.com/token', {
+    const config = getProviders()['youtube'];
+    const response = await fetch(config.tokenEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        client_id: process.env.GOOGLE_CLIENT_ID || '',
-        client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
         refresh_token: account.refresh_token,
         grant_type: 'refresh_token',
       }),
