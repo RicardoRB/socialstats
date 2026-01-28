@@ -32,8 +32,18 @@ const createMockSupabase = (overrides: any = {}) => {
   return mock;
 };
 
+const originalFetch = global.fetch;
+
 test('Sync Runner Logic', async (t) => {
   await t.test('runSync should complete successfully when everything is fine', async () => {
+    global.fetch = (async () => ({
+      ok: true,
+      json: async () => ({
+        columnHeaders: [{ name: 'day' }, { name: 'views' }],
+        rows: [['2023-01-01', '100']]
+      })
+    })) as any;
+
     let upsertCalled = false;
     const mockSupabase = createMockSupabase({
       metrics: {
@@ -48,6 +58,8 @@ test('Sync Runner Logic', async (t) => {
     assert.strictEqual(results.length, 1);
     assert.strictEqual(results[0].status, 'completed');
     assert.strictEqual(upsertCalled, true);
+
+    global.fetch = originalFetch;
   });
 
   await t.test('runSync should skip if already running', async () => {
@@ -72,6 +84,14 @@ test('Sync Runner Logic', async (t) => {
   });
 
   await t.test('runSync should handle errors and update job status', async () => {
+    global.fetch = (async () => ({
+      ok: true,
+      json: async () => ({
+        columnHeaders: [{ name: 'day' }, { name: 'views' }],
+        rows: [['2023-01-01', '100']]
+      })
+    })) as any;
+
     const mockSupabase = createMockSupabase({
       metrics: {
         upsert: () => Promise.resolve({ error: new Error('Database Error') })
@@ -97,5 +117,7 @@ test('Sync Runner Logic', async (t) => {
     const results = await runSync('user-1', 'youtube', new Date(), new Date(), mockSupabase);
     assert.strictEqual(results[0].status, 'failed');
     assert.strictEqual(failureRecorded, true);
+
+    global.fetch = originalFetch;
   });
 });

@@ -1,10 +1,5 @@
 import { createServer } from './auth';
-import { youtube } from './providers/youtube';
-import { Provider } from './providers';
-
-const providers: Record<string, Provider> = {
-  youtube,
-};
+import { providers } from './providers';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -87,6 +82,12 @@ export async function runSync(
     try {
       // Throttling: Add a small delay before processing each account
       await delay(500);
+
+      // 3.5 Refresh token if needed
+      if (provider.refreshTokenIfNeeded) {
+        const newAccessToken = await provider.refreshTokenIfNeeded(account, supabase);
+        account.access_token = newAccessToken;
+      }
 
       // 4. Fetch metrics from the provider
       const metrics = await provider.fetchMetrics(account, fromDate, toDate);
