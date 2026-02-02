@@ -17,14 +17,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Query metrics grouped by metric_key and provider
+  // Query metrics grouped by date, metric_key and provider
   // PostgREST automatically groups by non-aggregate columns when an aggregate is used
   const { data, error } = await supabase
     .from('metrics')
-    .select('metric_key, provider, sum:value.sum()')
+    .select('metric_date, metric_key, provider, sum:value.sum()')
     .eq('user_id', user.id)
     .gte('metric_date', from)
-    .lte('metric_date', to);
+    .lte('metric_date', to)
+    .order('metric_date', { ascending: true });
 
   if (error) {
     console.error('Error fetching metrics overview:', error);
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
 }
 
 interface MetricRow {
+  metric_date: string;
   metric_key: string;
   provider: string;
   sum: string | number | null;
@@ -52,9 +54,10 @@ interface MetricRow {
 export function transformMetricsData(data: MetricRow[]) {
   const totals: Record<string, number> = {};
   const byProvider: Record<string, Record<string, number>> = {};
+  const timeSeriesMap: Record<string, Record<string, number>> = {};
 
   data.forEach((row) => {
-    const { metric_key, provider, sum } = row;
+    const { metric_date, metric_key, provider, sum } = row;
     const val = Number(sum || 0);
 
     // Update totals
@@ -65,7 +68,17 @@ export function transformMetricsData(data: MetricRow[]) {
       byProvider[provider] = {};
     }
     byProvider[provider][metric_key] = (byProvider[provider][metric_key] || 0) + val;
+
+    // Update timeSeriesMap
+    if (!timeSeriesMap[metric_date]) {
+      timeSeriesMap[metric_date] = { date: metric_date } as any;
+    }
+    timeSeriesMap[metric_date][metric_key] = (timeSeriesMap[metric_date][metric_key] || 0) + val;
   });
 
-  return { totals, byProvider };
+  const timeSeries = Object.values(timeSeriesMap).sort((a: any, b: any) =>
+    a.date.localeCompare(b.date)
+  );
+
+  return { totals, byProvider, timeSeries };
 }
