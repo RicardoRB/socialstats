@@ -7,9 +7,14 @@ import {PlatformList} from '@/components/dashboard/PlatformList'
 import LogoutButton from './LogoutButton'
 import {Toaster} from '@/components/ui/sonner'
 
+// Fetch metrics for the last 30 days
+const now = Date.now();
+const to = new Date(now).toISOString().split('T')[0];
+const from = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
 export default async function DashboardPage() {
     const user = await requireUser()
-    const supabase = await createClient()
+    const supabase = createClient()
 
     // Fetch social accounts
     const {data: accounts} = await supabase
@@ -18,9 +23,6 @@ export default async function DashboardPage() {
         .eq('user_id', user.id)
         .order('connected_at', {ascending: false})
 
-    // Fetch metrics for the last 30 days
-    const to = new Date().toISOString().split('T')[0]
-    const from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
     const {data: metricsData} = await supabase
         .from('metrics')
