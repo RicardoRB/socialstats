@@ -2,7 +2,7 @@
 
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button"
-import {Twitter, Youtube} from "lucide-react"
+import {Instagram, Twitter, Youtube} from "lucide-react"
 
 interface ConnectProviderModalProps {
     open: boolean
@@ -22,6 +22,12 @@ export function ConnectProviderModal({open, onOpenChange}: ConnectProviderModalP
             name: 'X (Twitter)',
             icon: Twitter,
             color: 'hover:bg-slate-50 hover:text-slate-900 hover:border-slate-200'
+        },
+        {
+            id: 'instagram',
+            name: 'Instagram',
+            icon: Instagram,
+            color: 'hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200'
         },
     ]
 
