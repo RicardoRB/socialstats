@@ -1,5 +1,6 @@
 import {createBrowserClient, createServerClient} from '@supabase/auth-helpers-nextjs'
 import {redirect} from 'next/navigation'
+import {cookies} from "next/headers";
 
 /**
  * Client-side Supabase client
@@ -15,20 +16,23 @@ export const createClient = () => createBrowserClient(
 /**
  * Server-side Supabase client
  */
-export async function createServer() {
-    const {cookies} = await import('next/headers')
-    const cookieStore = await cookies()
+export function createServer() {
 
     return createServerClient(
         supabaseUrl,
         supabaseAnonKey,
         {
             cookies: {
-                getAll() {
+                async getAll() {
+                    const cookieStore =
+                        await cookies()
+
                     return cookieStore.getAll();
                 },
-                setAll(cookiesToSet) {
+                async setAll(cookiesToSet) {
                     try {
+                        const cookieStore = await cookies()
+
                         cookiesToSet.forEach(({name, value, options}) =>
                             cookieStore.set(name, value, options)
                         );

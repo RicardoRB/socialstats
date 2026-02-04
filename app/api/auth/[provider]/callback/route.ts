@@ -1,7 +1,7 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {exchangeCode, verifyState} from '@/lib/oauth';
-import {createClient} from '@/lib/supabase-server';
 import {providers} from '@/lib/providers';
+import {createServer} from "@/lib/auth";
 
 export async function GET(
     request: NextRequest,
@@ -17,7 +17,7 @@ export async function GET(
     }
 
     // Initialize Supabase client
-    const supabase = await createClient();
+    const supabase = createServer();
     const {data: {user}} = await supabase.auth.getUser();
 
     if (!user) {
