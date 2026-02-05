@@ -1,5 +1,6 @@
-import {createServer} from './auth';
 import {providers} from './providers';
+import {createServerSupabaseClient} from "@/lib/supabase/server";
+import {SupabaseClient} from "@supabase/supabase-js";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -8,9 +9,9 @@ export async function runSync(
     providerId: string,
     fromDate: Date,
     toDate: Date,
-    supabaseClient?: any
+    supabaseClient?: SupabaseClient,
 ) {
-    const supabase = supabaseClient || (await createServer());
+    const supabase = supabaseClient || createServerSupabaseClient();
     const provider = providers[providerId];
 
     if (!provider) {

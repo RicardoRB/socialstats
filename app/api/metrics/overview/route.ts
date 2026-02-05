@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {createServer} from "@/lib/auth";
+import {createServerSupabaseClient} from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
     const {searchParams} = new URL(request.url);
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({error: 'Missing from or to date'}, {status: 400});
     }
 
-    const supabase = createServer();
+    const supabase = createServerSupabaseClient();
     const {data: {user}} = await supabase.auth.getUser();
 
     if (!user) {

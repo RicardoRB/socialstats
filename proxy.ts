@@ -1,5 +1,5 @@
 import {type NextRequest, NextResponse} from 'next/server'
-import {createServer} from "@/lib/auth";
+import {createServerSupabaseClient} from "@/lib/supabase/server";
 
 export async function proxy(request: NextRequest) {
     const response = NextResponse.next({
@@ -8,7 +8,7 @@ export async function proxy(request: NextRequest) {
         },
     });
 
-    const supabase = createServer();
+    const supabase = createServerSupabaseClient();
 
     // This will refresh the session if needed
     const {data: {user}} = await supabase.auth.getUser()

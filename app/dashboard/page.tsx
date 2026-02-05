@@ -1,11 +1,13 @@
-import {requireUser} from '@/lib/auth'
-import {createClient} from '@/lib/supabase-server'
 import {transformMetricsData} from '@/app/api/metrics/overview/route'
 import {DashboardOverview} from '@/components/dashboard/DashboardOverview'
 import {TimeSeriesChart} from '@/components/dashboard/TimeSeriesChart'
 import {PlatformList} from '@/components/dashboard/PlatformList'
 import LogoutButton from './LogoutButton'
 import {Toaster} from '@/components/ui/sonner'
+import {createServerSupabaseClient} from "@/lib/supabase/server";
+import {redirect} from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 // Fetch metrics for the last 30 days
 const now = Date.now();
@@ -13,9 +15,12 @@ const to = new Date(now).toISOString().split('T')[0];
 const from = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
 export default async function DashboardPage() {
-    const user = await requireUser()
-    const supabase = createClient()
-
+    const supabase = createServerSupabaseClient()
+    const {data} = await supabase.auth.getUser();
+    if (!data?.user) {
+        return redirect('/login');
+    }
+    const user = data?.user;
     // Fetch social accounts
     const {data: accounts} = await supabase
         .from('social_accounts')

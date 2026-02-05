@@ -1,6 +1,6 @@
-import {createServer, requireUser} from "@/lib/auth"
-import {notFound} from "next/navigation"
+import {notFound, redirect} from "next/navigation"
 import PlatformClientPage from "./PlatformClientPage"
+import {createServerSupabaseClient} from "@/lib/supabase/server";
 
 export default async function PlatformPage({
                                                params,
@@ -8,9 +8,13 @@ export default async function PlatformPage({
     params: Promise<{ provider: string }>
 }) {
     const {provider} = await params
-    const user = await requireUser()
-    const supabase = await createServer()
-
+    const supabase = createServerSupabaseClient()
+    const {data} = await supabase.auth.getUser();
+    if (!data?.user) {
+        return redirect('/login');
+    }
+    const user = data?.user;
+    
     // 1. Get the social account for this provider and user
     const {data: account, error: accountError} = await supabase
         .from('social_accounts')

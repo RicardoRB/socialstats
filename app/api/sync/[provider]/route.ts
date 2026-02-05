@@ -1,12 +1,12 @@
 import {NextResponse} from 'next/server';
-import {getSession} from '@/lib/auth';
 import {runSync} from '@/lib/syncRunner';
+import {getSession} from "@/lib/supabase/server";
 
 export async function POST(
     req: Request,
     {params}: { params: Promise<{ provider: string }> }
 ) {
-    const session = await getSession(req);
+    const session = await getSession();
     if (!session || !session.user) {
         return NextResponse.json({error: 'Unauthorized'}, {status: 401});
     }

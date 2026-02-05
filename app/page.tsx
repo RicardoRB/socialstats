@@ -1,6 +1,8 @@
 import Link from "next/link";
 import {Button} from "@/components/ui/button";
-import {getSession} from "@/lib/auth";
+import {getSession} from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
     const session = await getSession();

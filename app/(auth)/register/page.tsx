@@ -1,23 +1,23 @@
 'use client'
 
-import {useState} from 'react'
+import React, {useState} from 'react'
 import {useRouter} from 'next/navigation'
-import {createClient} from '@/lib/auth'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
 import {Label} from '@/components/ui/label'
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card'
 import Link from 'next/link'
 import {toast} from 'sonner'
+import {createBrowserSupabaseClient} from "@/lib/supabase/browser";
 
 export default function RegisterPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
-    const supabase = createClient()
+    const supabase = createBrowserSupabaseClient();
 
-    const handleRegister = async (e: React.FormEvent) => {
+    const handleRegister = async (e: React.ChangeEvent) => {
         e.preventDefault()
         setLoading(true)
 

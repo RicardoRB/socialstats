@@ -1,6 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {buildAuthUrl} from '@/lib/oauth';
-import {createServer} from "@/lib/auth";
+import {createServerSupabaseClient} from "@/lib/supabase/server";
 
 export async function GET(
     request: NextRequest,
@@ -11,7 +11,7 @@ export async function GET(
     const redirectTo = searchParams.get('redirectTo') || undefined;
 
     // Initialize Supabase client to get the user
-    const supabase = createServer();
+    const supabase = createServerSupabaseClient();
     const {data: {user}} = await supabase.auth.getUser();
 
     if (!user) {
