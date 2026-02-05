@@ -40,6 +40,13 @@ export function getProviders(): Record<string, ProviderConfig> {
             tokenEndpoint: 'https://graph.facebook.com/v18.0/oauth/access_token',
             scope: 'instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement',
         },
+        tiktok: {
+            clientId: process.env.TIKTOK_CLIENT_ID || '',
+            clientSecret: process.env.TIKTOK_CLIENT_SECRET || '',
+            authEndpoint: 'https://www.tiktok.com/v2/auth/authorize/',
+            tokenEndpoint: 'https://open.tiktokapis.com/v2/oauth/token/',
+            scope: 'user.info.basic,user.info.stats,video.list',
+        },
     };
 }
 
@@ -68,7 +75,11 @@ export function buildAuthUrl(provider: string, userId: string, redirectTo?: stri
     const state = Buffer.from(`${payload}.${signature}`).toString('base64');
 
     const url = new URL(config.authEndpoint);
-    url.searchParams.set('client_id', config.clientId);
+    if (provider === 'tiktok') {
+        url.searchParams.set('client_key', config.clientId);
+    } else {
+        url.searchParams.set('client_id', config.clientId);
+    }
     url.searchParams.set('redirect_uri', getRedirectUri(provider));
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', config.scope);
@@ -124,13 +135,18 @@ export async function exchangeCode(provider: string, code: string, codeVerifier?
 
     const params: Record<string, string> = {
         code,
-        client_id: config.clientId,
         redirect_uri: getRedirectUri(provider),
         grant_type: 'authorization_code',
     };
 
-    if (config.clientSecret) {
+    if (provider === 'tiktok') {
+        params.client_key = config.clientId;
         params.client_secret = config.clientSecret;
+    } else {
+        params.client_id = config.clientId;
+        if (config.clientSecret) {
+            params.client_secret = config.clientSecret;
+        }
     }
 
     if (codeVerifier) {

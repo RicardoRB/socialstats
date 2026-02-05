@@ -5,12 +5,12 @@ import {InstagramIcon, YoutubeIcon} from "lucide-react"
 
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button"
-import {XIcon} from "@/components/icons"
+import {TikTokIcon, XIcon} from "@/components/icons"
 
 interface ConnectProviderModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    onSelect: (provider: "youtube" | "x" | "instagram") => void
+    onSelect: (provider: "youtube" | "x" | "instagram" | "tiktok") => void
 }
 
 function ConnectProviderModal({
@@ -39,6 +39,13 @@ function ConnectProviderModal({
             icon: InstagramIcon,
             color: "text-pink-600",
             description: "Track your reach and followers.",
+        },
+        {
+            id: "tiktok",
+            name: "TikTok",
+            icon: TikTokIcon,
+            color: "text-zinc-900 dark:text-zinc-100",
+            description: "Track your followers and likes.",
         },
     ] as const
 
