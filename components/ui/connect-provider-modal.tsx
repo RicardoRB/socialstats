@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {YoutubeIcon} from "lucide-react"
+import {InstagramIcon, YoutubeIcon} from "lucide-react"
 
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button"
@@ -10,7 +10,7 @@ import {XIcon} from "@/components/icons"
 interface ConnectProviderModalProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    onSelect: (provider: "youtube" | "x") => void
+    onSelect: (provider: "youtube" | "x" | "instagram") => void
 }
 
 function ConnectProviderModal({
@@ -32,6 +32,13 @@ function ConnectProviderModal({
             icon: XIcon,
             color: "text-zinc-900 dark:text-zinc-100",
             description: "Track your impressions and engagement.",
+        },
+        {
+            id: "instagram",
+            name: "Instagram",
+            icon: InstagramIcon,
+            color: "text-pink-600",
+            description: "Track your reach and followers.",
         },
     ] as const
 
