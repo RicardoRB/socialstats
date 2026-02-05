@@ -7,6 +7,7 @@ export interface MetricValue {
 import {youtube} from './youtube';
 import {x} from './x';
 import {instagram} from './instagram';
+import {tiktok} from './tiktok';
 
 export interface Provider {
     fetchMetrics(account: any, fromDate: Date, toDate: Date): Promise<MetricValue[]>;
@@ -20,4 +21,5 @@ export const providers: Record<string, Provider> = {
     youtube,
     x,
     instagram,
+    tiktok,
 };

@@ -3,6 +3,7 @@
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from "@/components/ui/dialog"
 import {Button} from "@/components/ui/button"
 import {Instagram, Twitter, Youtube} from "lucide-react"
+import {TikTokIcon} from "@/components/icons"
 
 interface ConnectProviderModalProps {
     open: boolean
@@ -28,6 +29,12 @@ export function ConnectProviderModal({open, onOpenChange}: ConnectProviderModalP
             name: 'Instagram',
             icon: Instagram,
             color: 'hover:bg-pink-50 hover:text-pink-600 hover:border-pink-200'
+        },
+        {
+            id: 'tiktok',
+            name: 'TikTok',
+            icon: TikTokIcon,
+            color: 'hover:bg-slate-900 hover:text-white hover:border-slate-800'
         },
     ]
 

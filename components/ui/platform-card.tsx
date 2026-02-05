@@ -6,10 +6,10 @@ import {Button} from "@/components/ui/button"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import {Badge} from "@/components/ui/badge"
 import {cn} from "@/lib/utils"
-import {XIcon} from "@/components/icons"
+import {TikTokIcon, XIcon} from "@/components/icons"
 
 interface PlatformCardProps extends React.ComponentProps<typeof Card> {
-    provider: "youtube" | "x" | "instagram"
+    provider: "youtube" | "x" | "instagram" | "tiktok"
     handle?: string
     avatarUrl?: string
     isConnected: boolean
@@ -29,8 +29,13 @@ function PlatformCard({
                           className,
                           ...props
                       }: PlatformCardProps) {
-    const ProviderIcon = provider === "youtube" ? YoutubeIcon : (provider === "instagram" ? InstagramIcon : XIcon)
-    const providerName = provider === "youtube" ? "YouTube" : (provider === "instagram" ? "Instagram" : "X (Twitter)")
+    const ProviderIcon = provider === "youtube" ? YoutubeIcon :
+        (provider === "instagram" ? InstagramIcon :
+            (provider === "tiktok" ? TikTokIcon : XIcon))
+
+    const providerName = provider === "youtube" ? "YouTube" :
+        (provider === "instagram" ? "Instagram" :
+            (provider === "tiktok" ? "TikTok" : "X (Twitter)"))
 
     return (
         <Card className={cn("w-full max-w-sm", className)} {...props}>
@@ -42,7 +47,9 @@ function PlatformCard({
                             ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
                             : provider === "instagram"
                                 ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
-                                : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                                : provider === "tiktok"
+                                    ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                                    : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
                     )}
                 >
                     <ProviderIcon className="size-6"/>
