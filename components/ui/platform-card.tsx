@@ -1,5 +1,5 @@
 import * as React from "react"
-import {LinkIcon, UnlinkIcon, YoutubeIcon} from "lucide-react"
+import {InstagramIcon, LinkIcon, UnlinkIcon, YoutubeIcon} from "lucide-react"
 
 import {Card, CardContent, CardFooter, CardHeader} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
@@ -9,7 +9,7 @@ import {cn} from "@/lib/utils"
 import {XIcon} from "@/components/icons"
 
 interface PlatformCardProps extends React.ComponentProps<typeof Card> {
-    provider: "youtube" | "x"
+    provider: "youtube" | "x" | "instagram"
     handle?: string
     avatarUrl?: string
     isConnected: boolean
@@ -29,8 +29,8 @@ function PlatformCard({
                           className,
                           ...props
                       }: PlatformCardProps) {
-    const ProviderIcon = provider === "youtube" ? YoutubeIcon : XIcon
-    const providerName = provider === "youtube" ? "YouTube" : "X (Twitter)"
+    const ProviderIcon = provider === "youtube" ? YoutubeIcon : (provider === "instagram" ? InstagramIcon : XIcon)
+    const providerName = provider === "youtube" ? "YouTube" : (provider === "instagram" ? "Instagram" : "X (Twitter)")
 
     return (
         <Card className={cn("w-full max-w-sm", className)} {...props}>
@@ -40,7 +40,9 @@ function PlatformCard({
                         "rounded-full p-2",
                         provider === "youtube"
                             ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                            : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                            : provider === "instagram"
+                                ? "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
+                                : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
                     )}
                 >
                     <ProviderIcon className="size-6"/>

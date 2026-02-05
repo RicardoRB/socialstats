@@ -4,7 +4,7 @@ import {useState} from "react"
 import {Card, CardContent, CardFooter} from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
-import {RefreshCw, Twitter, Youtube} from "lucide-react"
+import {Instagram, RefreshCw, Twitter, Youtube} from "lucide-react"
 import {toast} from "sonner"
 
 interface PlatformCardProps {
@@ -38,7 +38,7 @@ export function PlatformCard({account}: PlatformCardProps) {
         }
     }
 
-    const ProviderIcon = account.provider === 'youtube' ? Youtube : Twitter
+    const ProviderIcon = account.provider === 'youtube' ? Youtube : (account.provider === 'instagram' ? Instagram : Twitter)
 
     return (
         <Card className="overflow-hidden">

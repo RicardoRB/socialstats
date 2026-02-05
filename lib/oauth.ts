@@ -33,6 +33,13 @@ export function getProviders(): Record<string, ProviderConfig> {
             tokenEndpoint: 'https://api.twitter.com/2/oauth2/token',
             scope: 'tweet.read users.read offline.access openid',
         },
+        instagram: {
+            clientId: process.env.INSTAGRAM_CLIENT_ID || '',
+            clientSecret: process.env.INSTAGRAM_CLIENT_SECRET || '',
+            authEndpoint: 'https://www.facebook.com/v18.0/dialog/oauth',
+            tokenEndpoint: 'https://graph.facebook.com/v18.0/oauth/access_token',
+            scope: 'instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement',
+        },
     };
 }
 
