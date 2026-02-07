@@ -74,11 +74,18 @@ export default function RegisterPage() {
                         <Button type="submit" className="w-full" disabled={loading}>
                             {loading ? 'Registrando...' : 'Registrarse'}
                         </Button>
-                        <div className="text-sm text-center">
-                            ¿Ya tienes cuenta?{' '}
-                            <Link href="/login" className="text-blue-600 hover:underline">
-                                Inicia sesión
-                            </Link>
+                        <div className="text-xs text-center text-muted-foreground space-y-2">
+                            <p>
+                                Al registrarte, aceptas nuestros{' '}
+                                <Link href="/tos" className="underline hover:text-primary">Términos de Servicio</Link> y nuestra{' '}
+                                <Link href="/privacy-policy" className="underline hover:text-primary">Política de Privacidad</Link>.
+                            </p>
+                            <div>
+                                ¿Ya tienes cuenta?{' '}
+                                <Link href="/login" className="text-blue-600 hover:underline font-medium">
+                                    Inicia sesión
+                                </Link>
+                            </div>
                         </div>
                     </CardFooter>
                 </form>

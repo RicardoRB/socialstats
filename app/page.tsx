@@ -147,6 +147,11 @@ export default async function Home() {
                         <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
                             Built by Social Sync Inc. &copy; {new Date().getFullYear()}
                         </p>
+                        <nav className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <Link href="/tos" className="hover:underline">Términos</Link>
+                            <Link href="/privacy-policy" className="hover:underline">Privacidad</Link>
+                            <Link href="/impressum" className="hover:underline">Impressum</Link>
+                        </nav>
                     </div>
                 </div>
             </footer>
